@@ -446,18 +446,18 @@ _show_welcome() {
 
 Comandos:
 
-* jpm new: Cria um novo projeto JPM
+* jpm new: Criar um novo projeto JPM
 * jpm resolve: Instalar os pacotes adicionados em dependencies.txt.
-* jpm list: Lista os pacotes Java instalados.
-* jpm run: Executa os comandos 'resolve', 'compile' e identifica automaticamente a class Main e executa a aplicação.
-* jpm clean: Remove o target [ compilação ]
+* jpm install: Compilar projeto.
+* jpm run: Executar comandos 'resolve', 'install' e identifica automaticamente a class Main e executa a aplicação.
+* jpm clean: Remover artefatos de compilação
 
 Exemplo:
 $ jpm run
 
 $ New project JPM
 $ project name: hello
-$ package name: com.github.danroxha.hello
+$ package name: com.github.jpm.hello
 $ main class: Hello
 
 $ jpm run
