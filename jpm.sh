@@ -168,7 +168,7 @@ jpm_run() {
 }
 
 jpm_package() {
-  jpm_clean_force
+  jpm_clean
   jpm_resolve
   jpm_install
 
