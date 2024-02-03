@@ -29,8 +29,8 @@ Simples Build System
   2024-02-03 16:36:14 [JPM] dependency [loading] sqlite-jdbc-3.45.1.0.jar [https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.45.1.0/sqlite-jdbc-3.45.1.0.jar]
   2024-02-03 16:36:14 [JPM] dependency [loading] slf4j-api-1.7.36.jar [https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar]
   2024-02-03 16:36:17 waiting 2 of 2
-  2024-02-03 16:36:17 [JPM] path /home/danroxha/Workspace/jpm/hello/.jpm/
-  2024-02-03 16:36:17 [JPM] building /home/danroxha/Workspace/jpm/hello/src/main/java/com/github/jpm/hello/HelloApplication.java
+  2024-02-03 16:36:17 [JPM] path /home/danroxha/Workspace/hello/.jpm/
+  2024-02-03 16:36:17 [JPM] building /home/danroxha/Workspace/hello/src/main/java/com/github/jpm/hello/HelloApplication.java
   Hello JPM
   ```
 
