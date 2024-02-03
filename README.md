@@ -34,7 +34,7 @@ Simples Build System
   Hello JPM
   ```
 
-# Dependências
+# Dependências ```dependencies.txt```
 - Suporte somente pra repositório Mavel Central
 - Suporte para adição de dependência Gradle (Short)
   ```
