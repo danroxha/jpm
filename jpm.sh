@@ -8,10 +8,11 @@ JPM_MODULE=$WORKDIR/.jpm/
 DEPENDENCIES_FILE=$WORKDIR/$DEPENDENCIES
 SOURCE_PATTERN=src/main/java/
 SOURCE=$WORKDIR/$SOURCE_PATTERN
+REMOTE_REPO=https://raw.githubusercontent.com/danroxha/jpm/main/jpm.sh
 
 log() {
-	d_format=$(date +"%Y-%m-%d %H:%M:%S")
-	echo $d_format $1
+  d_format=$(date +"%Y-%m-%d %H:%M:%S")
+  echo $d_format $1
 }
 
 jpm_clean() {
@@ -38,18 +39,18 @@ _await() {
 _parse_dependencies() {
   repo=""
   while read line; do
-  	if [[ $line =~ ^# ]] || [[ $line =~ ^// ]]  
-  	  then 
-  	    continue 
-  	  fi
-  	
+    if [[ $line =~ ^# ]] || [[ $line =~ ^// ]]  
+      then 
+        continue 
+      fi
+    
     origin=https://repo1.maven.org/maven2
     dependency=$(echo $line | sed "s/'//ig")
-	group=$(echo $dependency | cut -d':' -f1)
-	group=$(echo $group | cut -d' ' -f2)
+    group=$(echo $dependency | cut -d':' -f1)
+    group=$(echo $group | cut -d' ' -f2)
     group=$(echo $group | sed "s/[.]/\//g")
-	artif=$(echo $dependency | cut -d':' -f2)
-	version=$(echo $dependency | cut -d':' -f3)
+    artif=$(echo $dependency | cut -d':' -f2)
+    version=$(echo $dependency | cut -d':' -f3)
 
     if [[ -z $group ]] || [[ -z $version ]] || [[ -z $artif ]] 
       then 
@@ -79,89 +80,88 @@ jpm_resolve() {
           log "dependency's resolving	 $dependency [$url]"
           wget $url -P $JPM_MODULE -q ?> /dev/null &
         else
-		  log "dependency resolved $dependency"
+      log "dependency resolved $dependency"
       fi
     done    
-	_await $qtd_dep
+  _await $qtd_dep
 
-	log "local .jpm "$JPM_MODULE
+  log "local .jpm "$JPM_MODULE
 }
 
 jpm_load_dependecies() {
-  LIBRIES=$BUILD_DIR/
-  for _JAR in $(ls $BUILD_LIB) 
+  libs=$BUILD_DIR/
+  for _jar in $(ls $BUILD_LIB) 
     do
-      ABS=$BUILD_LIB/$_JAR
-      LIBRIES=$LIBRIES:$ABS
-	done	
-  echo $LIBRIES
+      _abs=$BUILD_LIB/$_jar
+      libs=$libs:$_abs
+    done	
+  echo $libs
 }
 
 jpm_install() {
-	mkdir -p $BUILD_DIR $BUILD_LIB
-    cp -r $JPM_MODULE* $BUILD_LIB
+  mkdir -p $BUILD_DIR $BUILD_LIB
+  cp -r $JPM_MODULE* $BUILD_LIB
 
-	if [[ ! -z $(ls $JPM_MODULE) ]]
-	  then
-        DEPENDECIES=$(jpm_load_dependecies)
-	  fi
-	  
-	JAVA_FILES=$(find $SOURCE -name "*.java")
-	log "building $JAVA_FILES"
-	
-	if [ ! -z $DEPENDECIES ]
-	  then
-	    javac -d $BUILD_DIR $JAVA_FILES -cp $DEPENDECIES
-	  else
-	    javac -d $BUILD_DIR $JAVA_FILES
-	  fi
+  if [[ ! -z $(ls $JPM_MODULE) ]]
+    then
+      dependecies=$(jpm_load_dependecies)
+    fi
+    
+  java_files=$(find $SOURCE -name "*.java")
+  log "building $java_files"
+  
+  if [ ! -z $dependecies ]
+    then
+      javac -d $BUILD_DIR $java_files -cp $dependecies
+    else
+      javac -d $BUILD_DIR $java_files
+    fi
 }
 
 jpm_find_main_file() {
-  JAVA_FILES=$(find $SOURCE -name "*.java")
-  QTD=0
-  MAIN_FILE=""
-  for FILE in $JAVA_FILES
+  java_files=$(find $SOURCE -name "*.java")
+  _qtd=0
+  main_file=""
+  for _file in $java_files
     do
-      cat $FILE | grep "public static void main" > /dev/null
+      cat $_file | grep "public static void main" > /dev/null
       if [ $? -eq 0 ]
         then
-          MAIN_FILE="$MAIN_FILE $FILE"
-          QTD=$((QTD + 1))
+          main_file="$main_file $_file"
+          _qtd=$((_qtd + 1))
         fi
     done
-   if [ $QTD -gt 1 ]
+   if [ $_qtd -gt 1 ]
      then
-       log "Cannot defined main class [ $MAIN_FILES ]"
+       log "Cannot defined main class [ $main_file ]"
        exit 1
      fi
-   echo $MAIN_FILE	
+   echo $main_file	
 }
 
 jpm_find_main_ref() {
-  MAIN_FILE=$(jpm_find_main_file)
-  MAIN_FILE=$(echo $MAIN_FILE | sed "s|$SOURCE||")
-  MAIN_FILE=$(echo $MAIN_FILE | sed 's/\.java//g')
-  PKG=$(echo $MAIN_FILE | sed 's/\//\./g')
-  echo $PKG
+  main_file=$(jpm_find_main_file)
+  main_file=$(echo $main_file | sed "s|$SOURCE||")
+  main_file=$(echo $main_file | sed 's/\.java//g')
+  _pkg=$(echo $main_file | sed 's/\//\./g')
+  echo $_pkg
 }
 
 jpm_find_main_class() {
-  MAIN_FILE=$(jpm_find_main_file)
-  MAIN_FILE=$(echo $MAIN_FILE | sed "s|$SOURCE||")
-  MAIN_FILE=$(echo $MAIN_FILE | sed 's/\.java/\.class/g')
-  echo $MAIN_FILE
+  main_file=$(jpm_find_main_file)
+  main_file=$(echo $main_file | sed "s|$SOURCE||")
+  main_file=$(echo $main_file | sed 's/\.java/\.class/g')
+  echo $main_file
 }
 
-
 jpm_run() {
-    jpm_resolve
-    jpm_install
+  jpm_resolve
+  jpm_install
     
-    DEPENDECIES=$(jpm_load_dependecies)
-	MAIN_CLASS=$(jpm_find_main_ref)
-	
-	java -cp $DEPENDECIES $MAIN_CLASS
+  dependecies=$(jpm_load_dependecies)
+  main_class=$(jpm_find_main_ref)
+  
+  java -cp $dependecies $main_class
 }
 
 jpm_package() {
@@ -169,72 +169,75 @@ jpm_package() {
   jpm_resolve
   jpm_install
 
-  MAIN_CLASS=$(jpm_find_main_class)
-  MAIN_FILE=$(jpm_find_main_file)
-  MAIN_REF=$(jpm_find_main_ref)
+  main_class=$(jpm_find_main_class)
+  main_file=$(jpm_find_main_file)
+  main_ref=$(jpm_find_main_ref)
  
   rm -rf $BUILD_DIR/build
-  CLASSES=$(find $BUILD_DIR -name "*.class")
-  PGKS=""
+  _classes=$(find $BUILD_DIR -name "*.class")
+  _pkgs=""
 
-  for CLASS in $CLASSES
+  for _class in $_classes
     do
-     CLASS=$(echo $CLASS | sed "s|$BUILD_DIR\/||")
-     if [ $MAIN_CLASS = $CLASS ] ; then continue ; fi
-     PKGS="$PKGS $CLASS"
+     _class=$(echo $_class | sed "s|$BUILD_DIR\/||")
+     if [ $main_class = $_class ] ; then continue ; fi
+     _pkgs="$_pkgs $_class"
     done
-  cd $BUILD_DIR ; jar cf basic.jar $MAIN_CLASS $PGKS
+  cd $BUILD_DIR ; jar cf basic.jar $main_class $_pkgs
 }
 
 _lowercase() {
-	echo $1 | tr '[:upper:]' '[:lower:]'
+  echo $1 | tr '[:upper:]' '[:lower:]'
 }
 
 _capitalize() {
-	CAP=$(_lowercase $1)
-	CAP=$(echo $CAP | awk '{
-	     for ( i=1; i <= NF; i++) {
-	         sub(".", substr(toupper($i), 1,1) , $i);
-	         print $i;
-	         # or
-	         # print substr(toupper($i), 1,1) substr($i, 2);
-	     }
-	}')
+  _cap=$(_lowercase $1)
+  _cap=$(echo $_cap | awk '{
+      for ( i=1; i <= NF; i++) {
+        sub(".", substr(toupper($i), 1,1) , $i);
+        print $i;
+        # or
+        # print substr(toupper($i), 1,1) substr($i, 2);
+      }
+  }')
 
-	echo $CAP
+  echo $_cap
 }
 
 jpm_new() {
-	SUFFIX=Application
-	echo "New project JPM"
-	
-	echo -ne "project name: "
-	read PROJECT_NAME
-	PROJECT_NAME=$(_lowercase $PROJECT_NAME)
-	
-	echo -ne "package name: "
-	read PACKAGE_NAME
-	PACKAGE_NAME=$(_lowercase $PACKAGE_NAME)
+  suffix=Application
+  echo "New project JPM"
+  
+  echo -ne "project name: "
+  read project_name
+  project_name=$(_lowercase $project_name)
+  
+  echo -ne "package name: "
+  read package_name
+  package_name=$(_lowercase $package_name)
 
-	echo -ne "main class: "
-	read MAIN_CLASS
+  echo -ne "main class: "
+  read main_class
 
-	PKG=$PACKAGE_NAME
-	PACKAGE_NAME=$(echo $PACKAGE_NAME | sed 's/\./\//g')
+  _pkg=$package_name
+  package_name=$(echo $package_name | sed 's/\./\//g')
 
-	mkdir -p $PROJECT_NAME/$SOURCE_PATTERN/$PACKAGE_NAME
+  mkdir -p $project_name/$SOURCE_PATTERN/$package_name
 
-	cat << EOF > $PROJECT_NAME/$SOURCE_PATTERN/$PACKAGE_NAME/$MAIN_CLASS$SUFFIX.java
-package $PKG;
+  cat << EOF > $project_name/$SOURCE_PATTERN/$package_name/$main_class$suffix.java
+package $_pkg;
 
-public class $MAIN_CLASS$SUFFIX {
-	public static void main(String[] args) {
-		System.out.println("Hello JPM");
-	}
+public class $main_class$suffix {
+  public static void main(String[] args) {
+    System.out.println("Hello JPM");
+  }
 }
 EOF
 
-  cp jpm.sh $PROJECT_NAME/
+  log "Donwloading JPM"
+
+  wget $REMOTE_REPO -P $project_name -q ?> /dev/null
+  chmod +x $project_name/jpm.sh
 
   echo "
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -269,8 +272,8 @@ $ main class: Hello
 $ jpm run
 
 Para mais informações: https://github/danroxha/jpm"
-	
-  cat << EOF > $PROJECT_NAME/$DEPENDENCIES
+  
+  cat << EOF > $project_name/$DEPENDENCIES
 # Support to Gradle (Short). Only Central Repository
 # implementation 'aws.sdk.kotlin:aws-core-jvm:1.0.48'
 # 
@@ -285,8 +288,7 @@ implementation 'org.slf4j:slf4j-api:1.7.36'
 
 EOF
 
-  echo "local "$WORKDIR/$PROJECT_NAME
-
+  echo "local "$WORKDIR/$project_name
 }
 
 for arg in $* 
@@ -299,12 +301,12 @@ for arg in $*
 
 for arg in $* 
   do
-	case $arg in
-	  "resolve" ) jpm_resolve ;;
-	  "install" ) jpm_install ;;
-	  "package" ) jpm_package ;;
-	  "run" ) jpm_run ;;
-	  "new" ) jpm_new ;;
-	  *) ;;
-	esac
+    case $arg in
+      "resolve" ) jpm_resolve ;;
+      "install" ) jpm_install ;;
+      "package" ) jpm_package ;;
+      "run" ) jpm_run ;;
+      "new" ) jpm_new ;;
+      *) ;;
+    esac
   done
