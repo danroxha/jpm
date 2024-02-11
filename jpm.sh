@@ -46,19 +46,22 @@ _parse_dependencies() {
       fi
     
     origin=https://repo1.maven.org/maven2
-    dependency=$(echo $line | sed "s/'//ig")
-    group=$(echo $dependency | cut -d':' -f1)
-    group=$(echo $group | cut -d' ' -f2)
-    group=$(echo $group | sed "s/[.]/\//g")
-    artif=$(echo $dependency | cut -d':' -f2)
-    version=$(echo $dependency | cut -d':' -f3)
+    REGX_MATCH_GRADLE_SHORT="(\w+\s+)'(.+):(.+):(.+)'$"
+    
+    P_GROUP=2
+    P_ARTIF=3
+    P_VERSION=4
+
+    group=$(sed -E "s/$REGX_MATCH_GRADLE_SHORT/\\$P_GROUP/" <<< $line | sed -E "s/[\.]/\//")
+    artif=$(sed -E "s/$REGX_MATCH_GRADLE_SHORT/\\$P_ARTIF/" <<< $line)
+    version=$(sed -E "s/$REGX_MATCH_GRADLE_SHORT/\\$P_VERSION/" <<< $line)    
 
     if [[ -z $group ]] || [[ -z $version ]] || [[ -z $artif ]] 
       then 
         continue
       fi
-    
     repo="$repo $origin/$group/$artif/$version/$artif-$version.jar"
+
   done < $DEPENDENCIES_FILE
  
   echo $repo
